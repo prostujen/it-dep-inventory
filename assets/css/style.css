@@ -2,86 +2,45 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --bg-color: #0b0f19;
-    --card-bg: rgba(255, 255, 255, 0.03);
-    --card-border: rgba(255, 255, 255, 0.08);
-    --glass-blur: blur(12px);
+    --bg-color: #f4f6fa;
+    --card-bg: #ffffff;
+    --card-border: #dee2e6;
     
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1; /* Більш світлий сірий для кращої читанності */
-    --text-muted: #94a3b8;     /* Покращений контраст для другорядного тексту */
+    --text-primary: #212529;
+    --text-secondary: #495057;
+    --text-muted: #6c757d;
     
-    --accent-blue: #0ea5e9;
-    --accent-blue-rgb: 14, 165, 233;
-    --accent-purple: #c084fc;  /* Світліший фіолетовий */
-    --accent-purple-rgb: 192, 132, 252;
-    --accent-amber: #fbbf24;   /* Світліший бурштиновий */
-    --accent-amber-rgb: 251, 191, 36;
-    --accent-red: #f87171;     /* Світліший червоний */
-    --accent-red-rgb: 248, 113, 113;
-    --accent-green: #34d399;   /* Світліший зелений */
-    --accent-green-rgb: 52, 211, 153;
+    --accent-blue: #2d4a82; /* Фірмовий синій СумДУ */
+    --accent-blue-rgb: 45, 74, 130;
+    --accent-purple: #6f42c1;
+    --accent-purple-rgb: 111, 66, 193;
+    --accent-amber: #d97706; /* Бурштиновий */
+    --accent-amber-rgb: 217, 119, 6;
+    --accent-red: #dc3545;
+    --accent-red-rgb: 220, 53, 69;
+    --accent-green: #198754;
+    --accent-green-rgb: 25, 135, 84;
     
-    --grad-primary: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
-    --grad-purple: linear-gradient(135deg, #c084fc 0%, #8b5cf6 100%);
-    --grad-amber: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
-    --grad-danger: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
-    --grad-dark: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    --grad-primary: linear-gradient(135deg, #2d4a82 0%, #1e335c 100%);
+    --grad-purple: linear-gradient(135deg, #4b65a8 0%, #2d4a82 100%);
+    --grad-amber: linear-gradient(135deg, #ffc107 0%, #d97706 100%);
+    --grad-danger: linear-gradient(135deg, #ea868f 0%, #dc3545 100%);
+    --grad-dark: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 }
 
 body {
-    background: radial-gradient(circle at top right, #1e1b4b 0%, var(--bg-color) 60%);
+    background-color: var(--bg-color);
     color: var(--text-primary);
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
 }
 
-/* Glassmorphism card */
-.glass-card {
-    background: var(--card-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-}
-
-.glass-card:hover {
-    border-color: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
-}
-
-/* Page titles and gradients */
-.text-gradient {
-    background: var(--grad-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 700;
-}
-
-.text-gradient-purple {
-    background: var(--grad-purple);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 700;
-}
-
-.text-gradient-amber {
-    background: var(--grad-amber);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 700;
-}
-
-/* Navbar customization */
+/* Навігаційна панель у стилі кабінету СумДУ */
 .navbar-custom {
-    background: rgba(11, 15, 25, 0.7) !important;
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border-bottom: 1px solid var(--card-border);
+    background: #ffffff !important;
+    border-bottom: 4px solid var(--accent-blue) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .navbar-brand {
@@ -89,277 +48,289 @@ body {
     font-size: 1.4rem;
 }
 
-.nav-link {
+.navbar-custom .text-gradient {
+    background: none;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: unset;
+    color: var(--accent-blue) !important;
+}
+
+.navbar-custom .nav-link {
     color: var(--text-secondary) !important;
     font-weight: 500;
     transition: color 0.2s ease;
 }
 
-.nav-link:hover, .nav-link.active {
+.navbar-custom .nav-link:hover, .navbar-custom .nav-link.active {
+    color: var(--accent-blue) !important;
+    font-weight: 600;
+}
+
+/* Картки у стилі СумДУ (біле тло з синьою плашкою заголовка) */
+.glass-card {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 8px !important;
+    padding: 1.5rem;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+.glass-card:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Автоматичне перетворення заголовків h4 та h5 всередині карток на сині плашки СумДУ */
+.glass-card h4, .glass-card h5 {
+    background-color: #3b5394 !important;
+    color: #ffffff !important;
+    padding: 0.75rem 1.25rem !important;
+    margin: -1.5rem -1.5rem 1.5rem -1.5rem !important;
+    border-top-left-radius: 8px !important;
+    border-top-right-radius: 8px !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-image: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: unset !important;
+}
+
+/* Виправлення білого тексту для світлої теми всередині карток */
+.glass-card .text-white {
+    color: var(--text-primary) !important;
+}
+
+.glass-card .text-white-50 {
+    color: var(--text-secondary) !important;
+}
+
+/* Градієнтні заголовки поза картками */
+.text-gradient {
+    color: var(--accent-blue) !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: unset !important;
+    font-weight: 700;
+}
+
+.text-gradient-purple {
+    color: var(--accent-blue) !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: unset !important;
+}
+
+.text-gradient-amber {
+    color: var(--accent-blue) !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: unset !important;
+}
+
+/* Віджети статистики (Dashboard) */
+.widget-card {
+    border-left: 5px solid rgba(var(--widget-rgb), 1) !important;
+}
+
+.widget-card::before {
+    display: none; /* прибираємо неонове сяйво */
+}
+
+.widget-card h6 {
+    color: var(--text-muted) !important;
+}
+
+.widget-card h2.text-gradient {
     color: var(--accent-blue) !important;
 }
 
-/* Custom badges */
-.badge-custom {
-    padding: 0.5rem 0.8rem;
-    border-radius: 30px;
-    font-weight: 600;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.badge-in-work {
-    background: rgba(16, 185, 129, 0.15);
-    color: var(--accent-green);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.badge-repair {
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--accent-amber);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-.badge-reserve {
-    background: rgba(168, 85, 247, 0.15);
-    color: var(--accent-purple);
-    border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.badge-decommissioned {
-    background: rgba(244, 63, 94, 0.15);
-    color: var(--accent-red);
-    border: 1px solid rgba(244, 63, 94, 0.3);
-}
-
-/* Tables styling */
+/* Таблиці */
 .table-responsive-custom {
-    border-radius: 12px;
-    overflow: hidden;
+    border-radius: 6px;
     border: 1px solid var(--card-border);
 }
 
-.table-custom {
-    margin-bottom: 0;
-    background: transparent !important;
-}
-
 .table-custom th {
-    background: rgba(255, 255, 255, 0.05) !important;
-    color: var(--text-primary) !important;
+    background: #e9ecef !important;
+    color: var(--accent-blue) !important;
     font-weight: 600;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1) !important;
-    padding: 1rem;
+    border-bottom: 2px solid var(--card-border) !important;
+    padding: 0.75rem 1rem;
 }
 
 .table-custom td {
-    background: transparent !important;
-    color: var(--text-secondary);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-    padding: 1rem;
-    vertical-align: middle;
-}
-
-.table-custom tbody tr {
-    transition: background-color 0.2s ease;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--card-border) !important;
+    padding: 0.75rem 1rem;
 }
 
 .table-custom tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.02) !important;
+    background-color: #f8f9fa !important;
 }
 
-/* Forms input fields */
+/* Поля введення */
 .form-control-custom {
-    background: rgba(255, 255, 255, 0.02) !important;
-    border: 1px solid var(--card-border) !important;
+    background: #ffffff !important;
+    border: 1px solid #ccc !important;
     color: var(--text-primary) !important;
-    border-radius: 10px !important;
-    padding: 0.6rem 1rem !important;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+    border-radius: 4px !important;
+    padding: 0.5rem 0.75rem !important;
 }
 
 .form-control-custom:focus {
     border-color: var(--accent-blue) !important;
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2) !important;
-    outline: none;
+    box-shadow: 0 0 0 3px rgba(45, 74, 130, 0.15) !important;
 }
 
 .form-select-custom {
-    background: rgba(255, 255, 255, 0.02) !important;
-    border: 1px solid var(--card-border) !important;
+    background: #ffffff !important;
+    border: 1px solid #ccc !important;
     color: var(--text-primary) !important;
-    border-radius: 10px !important;
-    padding: 0.6rem 1rem !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
-    background-repeat: no-repeat !important;
-    background-position: right 1rem center !important;
-    background-size: 16px 12px !important;
+    border-radius: 4px !important;
+    padding: 0.5rem 0.75rem !important;
 }
 
 .form-select-custom:focus {
     border-color: var(--accent-blue) !important;
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2) !important;
-    outline: none;
+    box-shadow: 0 0 0 3px rgba(45, 74, 130, 0.15) !important;
 }
 
-.form-select-custom option {
-    background-color: var(--bg-color);
-    color: var(--text-primary);
-}
-
-/* Buttons */
+/* Кнопки */
 .btn-custom-primary {
-    background: var(--grad-primary);
-    border: none;
-    color: white;
-    font-weight: 600;
-    padding: 0.6rem 1.2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 14px 0 rgba(14, 165, 233, 0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: #3b5394 !important;
+    border: 1px solid #2d4277 !important;
+    color: white !important;
+    font-weight: 500;
+    padding: 0.5rem 1.2rem;
+    border-radius: 4px;
+    box-shadow: none !important;
 }
 
 .btn-custom-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px 0 rgba(14, 165, 233, 0.4);
-    color: white;
+    background: #2d4277 !important;
+    transform: none !important;
 }
 
 .btn-custom-secondary {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--card-border);
-    color: var(--text-primary);
-    font-weight: 600;
-    padding: 0.6rem 1.2rem;
-    border-radius: 10px;
-    transition: background 0.2s ease, transform 0.2s ease;
+    background: #ffffff !important;
+    border: 1px solid #ccc !important;
+    color: var(--text-primary) !important;
+    font-weight: 500;
+    padding: 0.5rem 1.2rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
 }
 
 .btn-custom-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
-    color: white;
+    background: #e9ecef !important;
+    transform: none !important;
+    color: var(--accent-blue) !important;
 }
 
 .btn-custom-danger {
-    background: var(--grad-danger);
-    border: none;
-    color: white;
-    font-weight: 600;
-    padding: 0.6rem 1.2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 14px 0 rgba(244, 63, 94, 0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.btn-custom-danger:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px 0 rgba(244, 63, 94, 0.4);
-    color: white;
-}
-
-/* Stat Widget Cards */
-.widget-card {
-    position: relative;
-    overflow: hidden;
-}
-
-.widget-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(var(--widget-rgb), 0.08) 0%, transparent 60%);
-    pointer-events: none;
-}
-
-/* Custom scrollbars */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--bg-color);
-}
-
-::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: #dc3545 !important;
+    border: 1px solid #b21f2d !important;
+    color: white !important;
+    font-weight: 500;
+    padding: 0.5rem 1.2rem;
     border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+.btn-custom-danger:hover {
+    background: #bd2130 !important;
+    transform: none !important;
 }
 
-/* IP Validation styling */
-.ip-invalid {
-    border-color: var(--accent-red) !important;
-    box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.2) !important;
+/* Кольорові бейджі статусів */
+.badge-custom {
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.75rem;
 }
 
-.ip-valid {
-    border-color: var(--accent-green) !important;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+.badge-in-work {
+    background: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
 }
 
-/* Animations */
-@keyframes pulseGlow {
-    0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(14, 165, 233, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+.badge-repair {
+    background: #fff3cd;
+    color: #664d03;
+    border: 1px solid #ffecb5;
 }
 
-.ping-success {
-    animation: pulseGlow 1.5s infinite;
+.badge-reserve {
+    background: #e2d9f3;
+    color: #4b2394;
+    border: 1px solid #d2c4ec;
 }
 
-.pulsing-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: inline-block;
+.badge-decommissioned {
+    background: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
 }
 
-.pulsing-dot-success {
-    background: var(--accent-green);
-    box-shadow: 0 0 8px var(--accent-green);
-}
-
-.pulsing-dot-danger {
-    background: var(--accent-red);
-    box-shadow: 0 0 8px var(--accent-red);
-}
-
-.pulsing-dot-warning {
-    background: var(--accent-amber);
-    box-shadow: 0 0 8px var(--accent-amber);
-}
-
-/* Modal styling */
+/* Модальні вікна */
 .modal-content-custom {
-    background: #0f172a !important;
-    backdrop-filter: var(--glass-blur) !important;
+    background: #ffffff !important;
     border: 1px solid var(--card-border) !important;
-    border-radius: 16px !important;
+    border-radius: 8px !important;
     color: var(--text-primary) !important;
 }
 
 .modal-header-custom {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-bottom: 1px solid var(--card-border) !important;
+    background: #f8f9fa;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.modal-header-custom h5 {
+    color: var(--accent-blue) !important;
 }
 
 .modal-footer-custom {
-    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-top: 1px solid var(--card-border) !important;
+    background: #f8f9fa;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
-/* Custom contrast overrides */
+.btn-close-white {
+    filter: invert(1) grayscale(1) brightness(0); /* робимо хрестик темним */
+}
+
+/* Мережева історія (таби) */
+#logTabs .nav-link {
+    color: var(--text-secondary) !important;
+    border-radius: 4px 4px 0 0;
+}
+
+#logTabs .nav-link.active {
+    background-color: #ffffff !important;
+    border: 1px solid var(--card-border) !important;
+    border-bottom-color: transparent !important;
+    color: var(--accent-blue) !important;
+}
+
+#globalLogTabs .nav-link {
+    color: var(--text-secondary) !important;
+}
+
+#globalLogTabs .nav-link.active {
+    border-bottom: 3px solid var(--accent-blue) !important;
+    color: var(--accent-blue) !important;
+}
+
+/* Інші дрібниці */
 .text-muted {
     color: var(--text-muted) !important;
 }
@@ -369,7 +340,25 @@ body {
     opacity: 0.65;
 }
 
-/* Brighten form-select elements */
-.form-select-custom {
-    color: var(--text-primary) !important;
+.ip-invalid {
+    border-color: var(--accent-red) !important;
+}
+
+.ip-valid {
+    border-color: var(--accent-green) !important;
+}
+
+.pulsing-dot-success {
+    background: var(--accent-green);
+    box-shadow: none;
+}
+
+.pulsing-dot-danger {
+    background: var(--accent-red);
+    box-shadow: none;
+}
+
+.pulsing-dot-warning {
+    background: var(--accent-amber);
+    box-shadow: none;
 }
