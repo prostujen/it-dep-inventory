@@ -391,7 +391,6 @@ body {
     /* Приховуємо меню, фільтри, кнопки дій та системні елементи */
     .navbar-custom, 
     .widget-card, 
-    .glass-card:not(.table-responsive):not(table),
     .no-print,
     .btn,
     form,

@@ -86,7 +86,7 @@ require_once 'includes/header.php';
 ?>
 
 <!-- Панель статистики -->
-<div class="row g-4 mb-5">
+<div class="row g-4 mb-5 no-print">
     <div class="col-md-3">
         <div class="glass-card widget-card h-100" style="--widget-rgb: 14, 165, 233;">
             <div class="d-flex justify-content-between align-items-center">
@@ -142,7 +142,7 @@ require_once 'includes/header.php';
 </div>
 
 <!-- Панель Фільтрів та Пошуку -->
-<div class="glass-card mb-4">
+<div class="glass-card mb-4 no-print">
     <div class="row align-items-center mb-3">
         <div class="col-md-6">
             <h4 class="mb-0 text-gradient-purple"><i class="bi bi-funnel-fill"></i> Фільтрація та пошук</h4>
@@ -215,7 +215,7 @@ require_once 'includes/header.php';
 </div>
 
 <!-- Модуль 4: Швидкі Автозвіти (Ревізія) -->
-<div class="glass-card mb-4">
+<div class="glass-card mb-4 no-print">
     <h5 class="text-gradient-amber mb-3"><i class="bi bi-file-earmark-bar-graph-fill"></i> Модуль швидких автозвітів</h5>
     <div class="d-flex flex-wrap gap-2 align-items-center">
         <a href="index.php?report=repair" class="btn btn-sm btn-custom-secondary <?php echo ($report === 'repair') ? 'border-warning text-warning' : ''; ?>">
