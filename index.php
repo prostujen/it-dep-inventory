@@ -239,12 +239,25 @@ require_once 'includes/header.php';
 
 <!-- Інформація про активний звіт -->
 <?php if ($report_title !== ''): ?>
-    <div class="alert alert-info bg-indigo-950 border-info border-opacity-25 text-info d-flex justify-content-between align-items-center mb-4 glass-card p-3">
+    <div class="alert alert-info bg-light border-info border-opacity-25 text-primary d-flex justify-content-between align-items-center mb-4 glass-card p-3 no-print">
         <div>
             <i class="bi bi-info-circle-fill me-2"></i>
             <strong><?php echo htmlspecialchars($report_title); ?></strong> (Знайдено записів: <?php echo count($devices); ?>)
         </div>
-        <a href="index.php" class="btn btn-sm btn-outline-info">Закрити звіт</a>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-sm btn-custom-primary">
+                <i class="bi bi-printer"></i> Друкувати звіт
+            </button>
+            <a href="index.php" class="btn btn-sm btn-custom-secondary">Закрити звіт</a>
+        </div>
+    </div>
+
+    <!-- Заголовок для друкованої версії звіту -->
+    <div class="print-header text-center mb-4">
+        <h2>Кафедра комп'ютерних наук СумДУ</h2>
+        <h4 class="text-secondary"><?php echo htmlspecialchars($report_title); ?></h4>
+        <p class="text-muted small">Дата генерації звіту: <?php echo date('d.m.Y H:i'); ?> | Всього знайдено записів: <?php echo count($devices); ?></p>
+        <hr>
     </div>
 <?php endif; ?>
 

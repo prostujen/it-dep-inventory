@@ -374,3 +374,78 @@ body {
     -webkit-backdrop-filter: none !important;
     margin-top: auto !important; /* Важливо для flexbox притискання */
 }
+
+/* Приховування заголовка друку за замовчуванням на екрані */
+.print-header {
+    display: none;
+}
+
+/* Налаштування для друкованої версії звітів */
+@media print {
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 12pt;
+    }
+    
+    /* Приховуємо меню, фільтри, кнопки дій та системні елементи */
+    .navbar-custom, 
+    .widget-card, 
+    .glass-card:not(.table-responsive):not(table),
+    .no-print,
+    .btn,
+    form,
+    .btn-close,
+    td:last-child, /* приховуємо стовпець "Дії" */
+    th:last-child {
+        display: none !important;
+    }
+    
+    /* Розкриваємо контейнери на весь екран */
+    .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .glass-card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        background: transparent !important;
+    }
+    
+    .table-responsive-custom {
+        border: none !important;
+        overflow: visible !important;
+    }
+    
+    .table-custom {
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+    
+    .table-custom th {
+        background-color: #f2f2f2 !important;
+        color: #000000 !important;
+        border: 1px solid #dee2e6 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .table-custom td {
+        color: #000000 !important;
+        border: 1px solid #dee2e6 !important;
+    }
+    
+    /* Показуємо заголовок друку */
+    .print-header {
+        display: block !important;
+    }
+    
+    /* Прибираємо футер із друку */
+    .footer {
+        display: none !important;
+    }
+}
