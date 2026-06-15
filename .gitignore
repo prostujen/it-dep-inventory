@@ -1,0 +1,14 @@
+# IDE / Editor folders
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# System files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
