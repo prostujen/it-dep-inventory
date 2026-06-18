@@ -30,8 +30,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center gap-2 <?php echo ($current_page == 'history_logs.php') ? 'active' : ''; ?>" href="history_logs.php">
-                            <i class="bi bi-journal-text"></i> Логи та Події
+                        <a class="nav-link d-flex align-items-center gap-2 <?php echo ($current_page == 'settings.php') ? 'active' : ''; ?>" href="settings.php">
+                            <i class="bi bi-gear-fill"></i> Налаштування
                         </a>
                     </li>
                     <li class="nav-item ms-lg-3">

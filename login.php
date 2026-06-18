@@ -12,12 +12,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
 
-    if ($username === 'admin' && $password === 'admin123') {
-        $_SESSION['logged_in'] = true;
-        header('Location: index.php');
-        exit;
+    if (!empty($username) && !empty($password)) {
+        require_once 'config/db.php';
+        $stmt_user = $pdo->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt_user->execute([$username]);
+        $db_user = $stmt_user->fetch();
+
+        if ($db_user && password_verify($password, $db_user['password'])) {
+            $_SESSION['logged_in'] = true;
+            header('Location: index.php');
+            exit;
+        } else {
+            $error = 'Невірний логін або пароль';
+        }
     } else {
-        $error = 'Невірний логін або пароль';
+        $error = 'Будь ласка, заповніть усі поля';
     }
 }
 ?>
@@ -106,25 +115,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: 1px solid #2d4277;
             color: #ffffff;
             border-radius: 3px;
-            padding: 6px 16px;
+            padding: 6px 20px;
             font-weight: 500;
             transition: background-color 0.2s;
         }
         .btn-sumdu:hover {
             background-color: #2d4277;
-            color: #ffffff;
-        }
-        .btn-sumdu-secondary {
-            background-color: #3b5394;
-            border: 1px solid #2d4277;
-            color: #ffffff;
-            border-radius: 3px;
-            padding: 6px 16px;
-            font-weight: 500;
-            opacity: 0.9;
-        }
-        .btn-sumdu-secondary:hover {
-            opacity: 1;
             color: #ffffff;
         }
         .login-footer {
@@ -176,12 +172,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label for="password" class="form-label">password</label>
                         <input type="password" class="form-control" id="password" name="password" required autocomplete="current-password">
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mt-4">
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-sumdu">Вхід</button>
-                            <button type="button" class="btn btn-sumdu-secondary" onclick="alert('Реєстрація недоступна для сисадміна')">Реєстрація</button>
-                        </div>
-                        <a href="#" class="text-decoration-none" style="color: #3b5394; font-size: 14px;" onclick="alert('Зверніться до адміністратора мережі')">Відновлення пароля</a>
+                    <div class="d-flex justify-content-start mt-4">
+                        <button type="submit" class="btn btn-sumdu">Вхід</button>
                     </div>
                 </form>
             </div>
