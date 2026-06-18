@@ -1,8 +1,6 @@
 <?php
-// index.php
 require_once 'config/db.php';
 
-// Отримання статистичних даних
 $stmt_total = $pdo->query("SELECT COUNT(*) FROM devices");
 $total_devices = $stmt_total->fetchColumn();
 
@@ -15,14 +13,12 @@ $repair_devices = $stmt_repair->fetchColumn();
 $stmt_reserve = $pdo->query("SELECT COUNT(*) FROM devices WHERE status = 'в резерві'");
 $reserve_devices = $stmt_reserve->fetchColumn();
 
-// Отримання унікальних кабінетів та типів техніки для фільтрів
 $locations_query = $pdo->query("SELECT DISTINCT location FROM devices WHERE location IS NOT NULL AND location != '' ORDER BY location");
 $locations = $locations_query->fetchAll(PDO::FETCH_COLUMN);
 
 $types_query = $pdo->query("SELECT DISTINCT name FROM devices WHERE name IS NOT NULL AND name != '' ORDER BY name");
 $types = $types_query->fetchAll(PDO::FETCH_COLUMN);
 
-// Параметри пошуку та фільтрації
 $search = isset($_GET['q']) ? trim($_GET['q']) : '';
 $filter_location = isset($_GET['location']) ? trim($_GET['location']) : '';
 $filter_type = isset($_GET['type']) ? trim($_GET['type']) : '';
@@ -31,20 +27,17 @@ $report = isset($_GET['report']) ? trim($_GET['report']) : '';
 $date_start = isset($_GET['date_start']) ? trim($_GET['date_start']) : '';
 $date_end = isset($_GET['date_end']) ? trim($_GET['date_end']) : '';
 
-// Базовий запит з LEFT JOIN для виведення IP адреси
 $sql = "SELECT d.*, n.ip_address, n.subnet_mask, n.gateway, n.dns_server 
         FROM devices d 
         LEFT JOIN network_settings n ON d.id = n.device_id 
         WHERE 1=1";
 $params = [];
 
-// Додавання умов пошуку
 if ($search !== '') {
     $sql .= " AND (d.name LIKE :search OR d.model LIKE :search OR d.serial_number LIKE :search OR d.inventory_number LIKE :search)";
     $params['search'] = "%$search%";
 }
 
-// Додавання фільтрів
 if ($filter_location !== '') {
     $sql .= " AND d.location = :location";
     $params['location'] = $filter_location;
@@ -60,7 +53,6 @@ if ($filter_status !== '') {
     $params['status'] = $filter_status;
 }
 
-// Логіка швидких звітів
 $report_title = '';
 if ($report === 'repair') {
     $sql .= " AND d.status = 'на ремонті'";
@@ -75,7 +67,6 @@ if ($report === 'repair') {
     $report_title = "Звіт: Отримане обладнання з " . date('d.m.Y', strtotime($date_start)) . " по " . date('d.m.Y', strtotime($date_end));
 }
 
-// Сортування
 $sql .= " ORDER BY d.id DESC";
 
 $stmt = $pdo->prepare($sql);
@@ -85,7 +76,6 @@ $devices = $stmt->fetchAll();
 require_once 'includes/header.php';
 ?>
 
-<!-- Панель статистики -->
 <div class="row g-4 mb-5 no-print">
     <div class="col-md-3">
         <div class="glass-card widget-card h-100" style="--widget-rgb: 14, 165, 233;">
@@ -141,7 +131,6 @@ require_once 'includes/header.php';
     </div>
 </div>
 
-<!-- Панель Фільтрів та Пошуку -->
 <div class="glass-card mb-4 no-print">
     <div class="row align-items-center mb-3">
         <div class="col-md-6">
@@ -155,7 +144,6 @@ require_once 'includes/header.php';
     </div>
     
     <form method="GET" action="index.php" class="row g-3">
-        <!-- Пошук по тексту -->
         <div class="col-md-3">
             <label class="form-label text-muted small">Пошук за ключовим словом</label>
             <div class="input-group">
@@ -164,7 +152,6 @@ require_once 'includes/header.php';
             </div>
         </div>
         
-        <!-- Фільтр локації -->
         <div class="col-md-3">
             <label class="form-label text-muted small">Аудиторія / Локація</label>
             <select name="location" class="form-select form-select-custom">
@@ -177,7 +164,6 @@ require_once 'includes/header.php';
              </select>
         </div>
         
-        <!-- Фільтр типу -->
         <div class="col-md-2">
             <label class="form-label text-muted small">Тип пристрою</label>
             <select name="type" class="form-select form-select-custom">
@@ -190,7 +176,6 @@ require_once 'includes/header.php';
             </select>
         </div>
 
-        <!-- Фільтр статусу -->
         <div class="col-md-2">
             <label class="form-label text-muted small">Статус</label>
             <select name="status" class="form-select form-select-custom">
@@ -202,7 +187,6 @@ require_once 'includes/header.php';
             </select>
         </div>
 
-        <!-- Кнопки пошуку -->
         <div class="col-md-2 d-flex align-items-end gap-2">
             <button type="submit" class="btn btn-custom-primary w-100">
                 <i class="bi bi-filter"></i> Застосувати
@@ -214,7 +198,6 @@ require_once 'includes/header.php';
     </form>
 </div>
 
-<!-- Модуль 4: Швидкі Автозвіти (Ревізія) -->
 <div class="glass-card mb-4 no-print">
     <h5 class="text-gradient-amber mb-3"><i class="bi bi-file-earmark-bar-graph-fill"></i> Модуль швидких автозвітів</h5>
     <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -225,7 +208,6 @@ require_once 'includes/header.php';
             <i class="bi bi-signpost-2-fill"></i> Зайняті IP-адреси
         </a>
         
-        <!-- Звіт за обраний період -->
         <form method="GET" action="index.php" class="d-inline-flex gap-2 align-items-center ms-lg-3 flex-wrap">
             <input type="hidden" name="report" value="period">
             <span class="text-muted small">За період введення в експлуатацію:</span>
@@ -237,7 +219,6 @@ require_once 'includes/header.php';
     </div>
 </div>
 
-<!-- Інформація про активний звіт -->
 <?php if ($report_title !== ''): ?>
     <div class="alert alert-info bg-light border-info border-opacity-25 text-primary d-flex justify-content-between align-items-center mb-4 glass-card p-3 no-print">
         <div>
@@ -252,7 +233,6 @@ require_once 'includes/header.php';
         </div>
     </div>
 
-    <!-- Заголовок для друкованої версії звіту -->
     <div class="print-header text-center mb-4">
         <h2>Кафедра комп'ютерних наук СумДУ</h2>
         <h4 class="text-secondary"><?php echo htmlspecialchars($report_title); ?></h4>
@@ -261,7 +241,6 @@ require_once 'includes/header.php';
     </div>
 <?php endif; ?>
 
-<!-- Таблиця списку пристроїв -->
 <div class="glass-card">
     <div class="table-responsive table-responsive-custom">
         <table class="table table-custom table-hover">
@@ -329,18 +308,18 @@ require_once 'includes/header.php';
                                         <i class="bi bi-eye-fill text-info"></i> Картка
                                     </a>
                                     <button class="btn btn-sm btn-custom-secondary edit-device-btn" 
-                                            data-id="<?php echo $dev['id']; ?>"
-                                            data-inv="<?php echo htmlspecialchars($dev['inventory_number']); ?>"
-                                            data-name="<?php echo htmlspecialchars($dev['name']); ?>"
-                                            data-model="<?php echo htmlspecialchars($dev['model']); ?>"
-                                            data-sn="<?php echo htmlspecialchars($dev['serial_number']); ?>"
-                                            data-status="<?php echo htmlspecialchars($dev['status']); ?>"
-                                            data-loc="<?php echo htmlspecialchars($dev['location']); ?>"
-                                            data-date="<?php echo htmlspecialchars($dev['accepted_date']); ?>"
-                                            data-resp="<?php echo htmlspecialchars($dev['responsible_person']); ?>"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#editDeviceModal"
-                                            title="Редагувати">
+                                             data-id="<?php echo $dev['id']; ?>"
+                                             data-inv="<?php echo htmlspecialchars($dev['inventory_number']); ?>"
+                                             data-name="<?php echo htmlspecialchars($dev['name']); ?>"
+                                             data-model="<?php echo htmlspecialchars($dev['model']); ?>"
+                                             data-sn="<?php echo htmlspecialchars($dev['serial_number']); ?>"
+                                             data-status="<?php echo htmlspecialchars($dev['status']); ?>"
+                                             data-loc="<?php echo htmlspecialchars($dev['location']); ?>"
+                                             data-date="<?php echo htmlspecialchars($dev['accepted_date']); ?>"
+                                             data-resp="<?php echo htmlspecialchars($dev['responsible_person']); ?>"
+                                             data-bs-toggle="modal" 
+                                             data-bs-target="#editDeviceModal"
+                                             title="Редагувати">
                                         <i class="bi bi-pencil-square text-warning"></i>
                                     </button>
                                     <a href="actions/delete_device.php?id=<?php echo $dev['id']; ?>" 
@@ -359,7 +338,6 @@ require_once 'includes/header.php';
     </div>
 </div>
 
-<!-- МОДАЛЬНЕ ВІКНО: Додати новий пристрій -->
 <div class="modal fade" id="addDeviceModal" tabindex="-1" aria-labelledby="addDeviceModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content modal-content-custom">
@@ -439,7 +417,6 @@ require_once 'includes/header.php';
     </div>
 </div>
 
-<!-- МОДАЛЬНЕ ВІКНО: Редагувати пристрій -->
 <div class="modal fade" id="editDeviceModal" tabindex="-1" aria-labelledby="editDeviceModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content modal-content-custom">
@@ -448,7 +425,6 @@ require_once 'includes/header.php';
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="actions/save_device.php" method="POST">
-                <!-- ID пристрою, який редагується -->
                 <input type="hidden" name="device_id" id="edit-id">
                 
                 <div class="modal-body">
@@ -503,7 +479,6 @@ require_once 'includes/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Обробник для динамічного заповнення форми редагування
     const editButtons = document.querySelectorAll('.edit-device-btn');
     editButtons.forEach(btn => {
         btn.addEventListener('click', function() {

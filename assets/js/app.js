@@ -1,7 +1,4 @@
-// assets/js/app.js
-
 document.addEventListener('DOMContentLoaded', function () {
-    // Валідація IP-адрес на клієнті в реальному часі
     const ipFields = document.querySelectorAll('.validate-ip');
     const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
@@ -23,14 +20,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// Функція запуску симуляції пінг-тесту
 function runPingTest(deviceId) {
     const statusContainer = document.getElementById(`ping-status-${deviceId}`);
     const pingBtn = document.getElementById(`ping-btn-${deviceId}`);
     
     if (!statusContainer || !pingBtn) return;
 
-    // Встановлення статусу завантаження
     pingBtn.disabled = true;
     const originalBtnText = pingBtn.innerHTML;
     pingBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Перевірка...`;
@@ -38,7 +33,6 @@ function runPingTest(deviceId) {
     statusContainer.className = 'mt-2 text-warning';
     statusContainer.innerHTML = '<i class="bi bi-hourglass-split"></i> З\'єднання з пристроєм...';
 
-    // AJAX-запит до actions/check_ping.php
     fetch(`actions/check_ping.php?device_id=${deviceId}`)
         .then(response => response.json())
         .then(data => {

@@ -1,5 +1,4 @@
 <?php
-// actions/update_net.php
 require_once '../config/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -18,7 +17,6 @@ if ($device_id <= 0) {
     exit;
 }
 
-// Перевірка існування пристрою
 try {
     $stmt_dev = $pdo->prepare("SELECT * FROM devices WHERE id = ?");
     $stmt_dev->execute([$device_id]);
@@ -33,11 +31,9 @@ try {
     exit;
 }
 
-// Якщо всі поля порожні, то просто очищаємо налаштування (без валідацій)
 $is_empty = (empty($ip_address) && empty($subnet_mask) && empty($gateway) && empty($dns_server));
 
 if (!$is_empty) {
-    // Валідація форматів IP
     if (!empty($ip_address) && !filter_var($ip_address, FILTER_VALIDATE_IP)) {
         header("Location: ../device_view.php?id=$device_id&error=invalid_ip");
         exit;
@@ -55,7 +51,6 @@ if (!$is_empty) {
         exit;
     }
 
-    // Перевірка на конфлікт IP адрес
     if (!empty($ip_address)) {
         try {
             $stmt_conflict = $pdo->prepare("
@@ -68,7 +63,6 @@ if (!$is_empty) {
             $conflicting_device = $stmt_conflict->fetch();
 
             if ($conflicting_device) {
-                // Записуємо спробу зміни як конфлікт у лог
                 $stmt_log_conflict = $pdo->prepare("
                     INSERT INTO network_history_and_logs (device_id, admin_name, log_type, ip_address, subnet_mask, gateway, session_status) 
                     VALUES (?, 'Адміністратор', 'конфлікт', ?, ?, ?, 'конфлікт')
@@ -85,11 +79,9 @@ if (!$is_empty) {
     }
 }
 
-// Запис налаштувань у БД
 try {
     $pdo->beginTransaction();
 
-    // Перевіряємо, чи вже існують налаштування для пристрою в network_settings
     $stmt_check = $pdo->prepare("SELECT COUNT(*) FROM network_settings WHERE device_id = ?");
     $stmt_check->execute([$device_id]);
     $exists = $stmt_check->fetchColumn() > 0;
@@ -114,7 +106,6 @@ try {
         $stmt_net_insert->execute([$device_id, $net_ip, $net_subnet, $net_gateway, $net_dns]);
     }
 
-    // Запис успішної події у лог зміни налаштувань
     $stmt_log = $pdo->prepare("
         INSERT INTO network_history_and_logs (device_id, admin_name, log_type, ip_address, subnet_mask, gateway, session_status) 
         VALUES (?, 'Адміністратор', 'зміна налаштувань', ?, ?, ?, 'успішно')
@@ -132,4 +123,3 @@ try {
     header("Location: ../device_view.php?id=$device_id&error=db_error&msg=" . urlencode($e->getMessage()));
     exit;
 }
-?>

@@ -1,7 +1,4 @@
 <?php
-// includes/header.php
-
-// Отримання поточної сторінки для підсвічування меню
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <!DOCTYPE html>
@@ -10,16 +7,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Inventory & Control</title>
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="assets/css/style.css?v=<?php echo time(); ?>">
 </head>
 <body>
 
-    <!-- Навігаційна панель -->
     <nav class="navbar navbar-expand-lg navbar-light navbar-custom sticky-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="index.php">
@@ -41,10 +34,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
                             <i class="bi bi-journal-text"></i> Логи та Події
                         </a>
                     </li>
+                    <li class="nav-item ms-lg-3">
+                        <a class="nav-link btn btn-outline-danger d-flex align-items-center gap-2 px-3 py-1 text-danger" href="actions/logout.php">
+                            <i class="bi bi-box-arrow-right"></i> Вихід
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Головний контейнер сторінки -->
     <div class="container py-4 my-3">

@@ -1,8 +1,6 @@
--- Скрипт створення бази даних та таблиць для IT-інвентаризації
 CREATE DATABASE IF NOT EXISTS `it_dep_inventory` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `it_dep_inventory`;
 
--- 1. Таблиця пристроїв
 CREATE TABLE IF NOT EXISTS `devices` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `inventory_number` VARCHAR(50) NOT NULL UNIQUE,
@@ -17,7 +15,6 @@ CREATE TABLE IF NOT EXISTS `devices` (
     INDEX `idx_location` (`location`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 2. Мережеві налаштування (One-to-One з devices)
 CREATE TABLE IF NOT EXISTS `network_settings` (
     `device_id` INT PRIMARY KEY,
     `ip_address` VARCHAR(45) DEFAULT NULL,
@@ -27,7 +24,6 @@ CREATE TABLE IF NOT EXISTS `network_settings` (
     FOREIGN KEY (`device_id`) REFERENCES `devices`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 3. Історія життєвого циклу та переміщень пристроїв
 CREATE TABLE IF NOT EXISTS `device_history` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `device_id` INT NOT NULL,
@@ -39,7 +35,6 @@ CREATE TABLE IF NOT EXISTS `device_history` (
     FOREIGN KEY (`device_id`) REFERENCES `devices`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 4. Логи мережевих змін, сесій та збоїв зв'язку
 CREATE TABLE IF NOT EXISTS `network_history_and_logs` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `device_id` INT NOT NULL,

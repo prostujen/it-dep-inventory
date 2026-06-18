@@ -1,5 +1,4 @@
 <?php
-// actions/rollback_net.php
 require_once '../config/db.php';
 
 $log_id    = isset($_GET['log_id']) ? intval($_GET['log_id']) : 0;
@@ -11,7 +10,6 @@ if ($log_id <= 0 || $device_id <= 0) {
 }
 
 try {
-    // 1. Отримання запису логу
     $stmt_log = $pdo->prepare("SELECT * FROM network_history_and_logs WHERE id = ? AND device_id = ?");
     $stmt_log->execute([$log_id, $device_id]);
     $log_entry = $stmt_log->fetch();
@@ -21,7 +19,6 @@ try {
         exit;
     }
 
-    // Якщо IP-адреса не порожня, перевіряємо її на конфлікти
     if (!empty($log_entry['ip_address'])) {
         $stmt_conflict = $pdo->prepare("
             SELECT d.id, d.name, d.inventory_number 
@@ -33,7 +30,6 @@ try {
         $conflicting_device = $stmt_conflict->fetch();
 
         if ($conflicting_device) {
-            // Записуємо спробу відновлення як конфлікт у логи
             $stmt_log_conflict = $pdo->prepare("
                 INSERT INTO network_history_and_logs (device_id, admin_name, log_type, ip_address, subnet_mask, gateway, session_status) 
                 VALUES (?, 'Адміністратор', 'конфлікт', ?, ?, ?, 'конфлікт')
@@ -45,10 +41,8 @@ try {
         }
     }
 
-    // 2. Виконання відкату налаштувань у транзакції
     $pdo->beginTransaction();
 
-    // Оновлюємо поточні мережеві налаштування
     $stmt_update = $pdo->prepare("
         UPDATE network_settings 
         SET ip_address = ?, subnet_mask = ?, gateway = ?
@@ -61,7 +55,6 @@ try {
         $device_id
     ]);
 
-    // Записуємо операцію відновлення в логи
     $stmt_rollback_log = $pdo->prepare("
         INSERT INTO network_history_and_logs (device_id, admin_name, log_type, ip_address, subnet_mask, gateway, session_status) 
         VALUES (?, 'Адміністратор', 'відновлення', ?, ?, ?, 'успішно')

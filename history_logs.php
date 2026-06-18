@@ -1,9 +1,7 @@
 <?php
-// history_logs.php
 require_once 'config/db.php';
 
 try {
-    // 1. Отримуємо всі мережеві логи
     $net_logs_stmt = $pdo->query("
         SELECT n.*, d.name AS device_name, d.inventory_number, d.model 
         FROM network_history_and_logs n
@@ -12,7 +10,6 @@ try {
     ");
     $net_logs = $net_logs_stmt->fetchAll();
 
-    // 2. Отримуємо всю історію переміщень/статусів пристроїв
     $dev_history_stmt = $pdo->query("
         SELECT h.*, d.name AS device_name, d.inventory_number, d.model 
         FROM device_history h
@@ -43,7 +40,6 @@ require_once 'includes/header.php';
 </div>
 
 <div class="glass-card">
-    <!-- Навігація вкладок журналу -->
     <ul class="nav nav-tabs border-secondary border-opacity-10 mb-4" id="globalLogTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active py-2 text-white bg-transparent border-0 border-bottom border-3 border-transparent" id="global-net-tab" data-bs-toggle="tab" data-bs-target="#global-net" type="button" role="tab" aria-controls="global-net" aria-selected="true">
@@ -58,7 +54,6 @@ require_once 'includes/header.php';
     </ul>
 
     <div class="tab-content" id="globalLogTabsContent">
-        <!-- ВКЛАДКА 1: Системні мережеві логи -->
         <div class="tab-pane fade show active" id="global-net" role="tabpanel" aria-labelledby="global-net-tab">
             <?php if (empty($net_logs)): ?>
                 <div class="text-center py-5 text-muted">
@@ -132,7 +127,6 @@ require_once 'includes/header.php';
             <?php endif; ?>
         </div>
 
-        <!-- ВКЛАДКА 2: Життєвий цикл обладнання -->
         <div class="tab-pane fade" id="global-dev" role="tabpanel" aria-labelledby="global-dev-tab">
             <?php if (empty($dev_history)): ?>
                 <div class="text-center py-5 text-muted">

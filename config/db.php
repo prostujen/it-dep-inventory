@@ -1,10 +1,20 @@
 <?php
-// config/db.php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (basename($_SERVER['SCRIPT_NAME']) !== 'login.php') {
+    if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+        $is_action = (strpos($_SERVER['SCRIPT_NAME'], '/actions/') !== false);
+        header('Location: ' . ($is_action ? '../login.php' : 'login.php'));
+        exit;
+    }
+}
 
 $host = '127.0.0.1';
 $db   = 'it_dep_inventory';
 $user = 'root';
-$pass = ''; // За замовчуванням у XAMPP пароль порожній
+$pass = '';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";

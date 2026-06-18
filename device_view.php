@@ -1,5 +1,4 @@
 <?php
-// device_view.php
 require_once 'config/db.php';
 
 $device_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -10,7 +9,6 @@ if ($device_id <= 0) {
 }
 
 try {
-    // 1. Отримання інформації про пристрій
     $stmt = $pdo->prepare("SELECT * FROM devices WHERE id = ?");
     $stmt->execute([$device_id]);
     $device = $stmt->fetch();
@@ -20,17 +18,14 @@ try {
         exit;
     }
 
-    // 2. Отримання поточних мережевих налаштувань
     $stmt_net = $pdo->prepare("SELECT * FROM network_settings WHERE device_id = ?");
     $stmt_net->execute([$device_id]);
     $net_settings = $stmt_net->fetch();
 
-    // 3. Отримання історії життєвого циклу
     $stmt_history = $pdo->prepare("SELECT * FROM device_history WHERE device_id = ? ORDER BY event_date DESC");
     $stmt_history->execute([$device_id]);
     $history_records = $stmt_history->fetchAll();
 
-    // 4. Отримання мережевих логів
     $stmt_net_logs = $pdo->prepare("SELECT * FROM network_history_and_logs WHERE device_id = ? ORDER BY log_date DESC");
     $stmt_net_logs->execute([$device_id]);
     $net_logs = $stmt_net_logs->fetchAll();
@@ -42,14 +37,12 @@ try {
 require_once 'includes/header.php';
 ?>
 
-<!-- Хлібні крихти / Кнопка назад -->
 <div class="mb-4">
     <a href="index.php" class="btn btn-custom-secondary d-inline-flex align-items-center gap-2">
         <i class="bi bi-arrow-left-short fs-5"></i> Назад до списку
     </a>
 </div>
 
-<!-- Повідомлення про статус операцій -->
 <?php if (isset($_GET['success'])): ?>
     <div class="alert alert-success bg-emerald-950 border-success border-opacity-25 text-success glass-card mb-4">
         <i class="bi bi-check-circle-fill me-2"></i>
@@ -80,10 +73,8 @@ require_once 'includes/header.php';
 <?php endif; ?>
 
 <div class="row g-4">
-    <!-- Ліва колонка: Картка пристрою та поточні налаштування мережі -->
     <div class="col-lg-5">
         
-        <!-- Картка пристрою -->
         <div class="glass-card mb-4 position-relative overflow-hidden">
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <div>
@@ -134,7 +125,6 @@ require_once 'includes/header.php';
                 </table>
             </div>
 
-            <!-- Симуляція моніторингу -->
             <?php if ($net_settings && !empty($net_settings['ip_address'])): ?>
                 <div class="p-3 rounded border border-secondary border-opacity-10" style="background: rgba(255, 255, 255, 0.01);">
                     <div class="d-flex align-items-center justify-content-between">
@@ -157,7 +147,6 @@ require_once 'includes/header.php';
             <?php endif; ?>
         </div>
 
-        <!-- Налаштування мережі -->
         <div class="glass-card">
             <h4 class="text-gradient mb-3"><i class="bi bi-sliders"></i> Конфігурація мережі</h4>
             
@@ -201,10 +190,8 @@ require_once 'includes/header.php';
         </div>
     </div>
 
-    <!-- Права колонка: Логи та історія змін -->
     <div class="col-lg-7">
         <div class="glass-card h-100">
-            <!-- Навігація вкладок -->
             <ul class="nav nav-tabs border-secondary border-opacity-10 mb-4" id="logTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active py-2 text-white bg-transparent border-0 border-bottom border-3 border-transparent" id="net-logs-tab" data-bs-toggle="tab" data-bs-target="#net-logs" type="button" role="tab" aria-controls="net-logs" aria-selected="true">
@@ -219,7 +206,6 @@ require_once 'includes/header.php';
             </ul>
 
             <div class="tab-content" id="logTabsContent">
-                <!-- ВКЛАДКА 1: Логи мережі -->
                 <div class="tab-pane fade show active" id="net-logs" role="tabpanel" aria-labelledby="net-logs-tab">
                     <h5 class="text-white mb-3 small text-uppercase tracking-wider">Мережева історія (Зміни налаштувань, збої зв'язку)</h5>
                     
@@ -277,7 +263,6 @@ require_once 'includes/header.php';
                                                 </span>
                                             </td>
                                             <td class="text-center">
-                                                <!-- Функція повернення з ремонту / відкату налаштувань -->
                                                 <?php if ($log['log_type'] !== 'збій зв\'язку' && $log['ip_address'] !== null): ?>
                                                     <a href="actions/rollback_net.php?log_id=<?php echo $log['id']; ?>&device_id=<?php echo $device_id; ?>" 
                                                        class="btn btn-sm btn-outline-info py-0 px-2"
@@ -297,7 +282,6 @@ require_once 'includes/header.php';
                     <?php endif; ?>
                 </div>
 
-                <!-- ВКЛАДКА 2: Життєвий цикл пристрою -->
                 <div class="tab-pane fade" id="device-history" role="tabpanel" aria-labelledby="device-history-tab">
                     <h5 class="text-white mb-3 small text-uppercase tracking-wider">Історія переміщень, ремонтів та життєвого циклу</h5>
                     
@@ -356,7 +340,6 @@ require_once 'includes/header.php';
     </div>
 </div>
 
-<!-- Стилізація для активних вкладок у темному режимі -->
 <style>
 #logTabs .nav-link {
     border-radius: 0;
