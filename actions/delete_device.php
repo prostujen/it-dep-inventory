@@ -1,6 +1,12 @@
 <?php
 require_once '../config/db.php';
 
+// Check if user is logged in and is admin
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true || !isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+    header("Location: ../index.php?error=access_denied");
+    exit;
+}
+
 $device_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if ($device_id <= 0) {
@@ -25,4 +31,3 @@ try {
     header("Location: ../index.php?error=db_error&msg=" . urlencode($e->getMessage()));
     exit;
 }
-?>

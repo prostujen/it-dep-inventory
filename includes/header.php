@@ -23,7 +23,18 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto gap-2">
+                <ul class="navbar-nav ms-auto gap-2 align-items-center">
+                    <?php if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true): ?>
+                    <li class="nav-item d-flex align-items-center me-lg-3 text-muted small border-end pe-lg-3 border-secondary border-opacity-25">
+                        <i class="bi bi-person-circle me-2 text-primary fs-5"></i>
+                        <span class="fw-semibold text-secondary">
+                            <?php echo htmlspecialchars($_SESSION['user_fullname'] ?? 'Користувач'); ?> 
+                            <span class="badge <?php echo (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'bg-danger' : 'bg-primary'; ?> text-white ms-1" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 4px;">
+                                <?php echo (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'Адміністратор (admin)' : 'Користувач (user)'; ?>
+                            </span>
+                        </span>
+                    </li>
+                    <?php endif; ?>
                     <li class="nav-item">
                         <a class="nav-link d-flex align-items-center gap-2 <?php echo ($current_page == 'index.php') ? 'active' : ''; ?>" href="index.php">
                             <i class="bi bi-grid-fill"></i> Панель керування

@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once 'config/db.php';
 
 if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
     header('Location: index.php');
@@ -13,13 +13,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = trim($_POST['password'] ?? '');
 
     if (!empty($username) && !empty($password)) {
-        require_once 'config/db.php';
         $stmt_user = $pdo->prepare("SELECT * FROM users WHERE username = ?");
         $stmt_user->execute([$username]);
         $db_user = $stmt_user->fetch();
 
         if ($db_user && password_verify($password, $db_user['password'])) {
             $_SESSION['logged_in'] = true;
+            $_SESSION['user_id'] = $db_user['id'];
+            $_SESSION['user_role'] = $db_user['role'] ?? 'teacher';
+            $_SESSION['user_fullname'] = $db_user['full_name'] ?? $db_user['username'];
             header('Location: index.php');
             exit;
         } else {
@@ -181,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <footer class="login-footer">
-        <div class="container d-flex justify-content-end">
+        <div class="container text-center">
             <span>© Центр інформаційних систем 2026</span>
         </div>
     </footer>

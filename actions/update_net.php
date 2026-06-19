@@ -11,6 +11,7 @@ $ip_address  = trim($_POST['ip_address']);
 $subnet_mask = trim($_POST['subnet_mask']);
 $gateway     = trim($_POST['gateway']);
 $dns_server  = trim($_POST['dns_server']);
+$mac_address = isset($_POST['mac_address']) ? trim($_POST['mac_address']) : '';
 
 if ($device_id <= 0) {
     header("Location: ../index.php?error=invalid_id");
@@ -31,7 +32,7 @@ try {
     exit;
 }
 
-$is_empty = (empty($ip_address) && empty($subnet_mask) && empty($gateway) && empty($dns_server));
+$is_empty = (empty($ip_address) && empty($subnet_mask) && empty($gateway) && empty($dns_server) && empty($mac_address));
 
 if (!$is_empty) {
     if (!empty($ip_address) && !filter_var($ip_address, FILTER_VALIDATE_IP)) {
@@ -77,6 +78,27 @@ if (!$is_empty) {
             exit;
         }
     }
+
+    if (!empty($mac_address)) {
+        try {
+            $stmt_mac_conflict = $pdo->prepare("
+                SELECT d.id, d.name, d.inventory_number 
+                FROM network_settings n
+                JOIN devices d ON n.device_id = d.id
+                WHERE n.mac_address = ? AND d.id != ? AND d.status != 'списано'
+            ");
+            $stmt_mac_conflict->execute([$mac_address, $device_id]);
+            $conflicting_mac = $stmt_mac_conflict->fetch();
+
+            if ($conflicting_mac) {
+                header("Location: ../device_view.php?id=$device_id&error=mac_conflict&conflicting_inv=" . urlencode($conflicting_mac['inventory_number']));
+                exit;
+            }
+        } catch (\PDOException $e) {
+            header("Location: ../device_view.php?id=$device_id&error=db_error&msg=" . urlencode($e->getMessage()));
+            exit;
+        }
+    }
 }
 
 try {
@@ -90,20 +112,21 @@ try {
     $net_subnet  = !empty($subnet_mask) ? $subnet_mask : null;
     $net_gateway = !empty($gateway) ? $gateway : null;
     $net_dns     = !empty($dns_server) ? $dns_server : null;
+    $net_mac     = !empty($mac_address) ? $mac_address : null;
 
     if ($exists) {
         $stmt_net_update = $pdo->prepare("
             UPDATE network_settings 
-            SET ip_address = ?, subnet_mask = ?, gateway = ?, dns_server = ? 
+            SET ip_address = ?, subnet_mask = ?, gateway = ?, dns_server = ?, mac_address = ? 
             WHERE device_id = ?
         ");
-        $stmt_net_update->execute([$net_ip, $net_subnet, $net_gateway, $net_dns, $device_id]);
+        $stmt_net_update->execute([$net_ip, $net_subnet, $net_gateway, $net_dns, $net_mac, $device_id]);
     } else {
         $stmt_net_insert = $pdo->prepare("
-            INSERT INTO network_settings (device_id, ip_address, subnet_mask, gateway, dns_server) 
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO network_settings (device_id, ip_address, subnet_mask, gateway, dns_server, mac_address) 
+            VALUES (?, ?, ?, ?, ?, ?)
         ");
-        $stmt_net_insert->execute([$device_id, $net_ip, $net_subnet, $net_gateway, $net_dns]);
+        $stmt_net_insert->execute([$device_id, $net_ip, $net_subnet, $net_gateway, $net_dns, $net_mac]);
     }
 
     $stmt_log = $pdo->prepare("

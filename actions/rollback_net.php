@@ -77,4 +77,3 @@ try {
     header("Location: ../device_view.php?id=$device_id&error=db_error&msg=" . urlencode($e->getMessage()));
     exit;
 }
-?>
