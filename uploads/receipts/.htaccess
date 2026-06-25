@@ -1,0 +1,6 @@
+# Disable execution of scripts in uploads directory
+<FilesMatch "\.(php|php5|phtml|php3|php4|php6|pl|py|jsp|asp|html|htm|shtml|sh|cgi)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+Header set X-Content-Type-Options "nosniff"

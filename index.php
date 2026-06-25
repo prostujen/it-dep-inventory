@@ -15,6 +15,14 @@ $repair_devices = $stmt_repair->fetchColumn();
 $stmt_reserve = $pdo->query("SELECT COUNT(*) FROM devices WHERE status = 'в резерві'");
 $reserve_devices = $stmt_reserve->fetchColumn();
 
+$stmt_repair_cost = $pdo->query("SELECT COALESCE(SUM(total_price),0) FROM repair_expenses WHERE payment_status != 'заплановано'");
+$total_repair_cost = (float)$stmt_repair_cost->fetchColumn();
+$stmt_repair_cost_month = $pdo->query("SELECT COALESCE(SUM(total_price),0) FROM repair_expenses WHERE payment_status != 'заплановано' AND YEAR(expense_date) = YEAR(CURDATE()) AND MONTH(expense_date) = MONTH(CURDATE())");
+$repair_cost_month = (float)$stmt_repair_cost_month->fetchColumn();
+$stmt_repair_cost_prev = $pdo->query("SELECT COALESCE(SUM(total_price),0) FROM repair_expenses WHERE payment_status != 'заплановано' AND YEAR(expense_date) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) AND MONTH(expense_date) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH))");
+$repair_cost_prev = (float)$stmt_repair_cost_prev->fetchColumn();
+$repair_cost_change = $repair_cost_prev > 0 ? round(($repair_cost_month - $repair_cost_prev) / $repair_cost_prev * 100, 1) : null;
+
 $locations_query = $pdo->query("SELECT DISTINCT location FROM devices WHERE location IS NOT NULL AND location != '' ORDER BY location");
 $locations = $locations_query->fetchAll(PDO::FETCH_COLUMN);
 
@@ -118,7 +126,7 @@ require_once 'includes/header.php';
 <?php endif; ?>
 
 <div class="row g-4 mb-5 no-print">
-    <div class="col-md-3">
+    <div class="col-lg">
         <div class="glass-card widget-card h-100" style="--widget-rgb: 14, 165, 233;">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -131,7 +139,7 @@ require_once 'includes/header.php';
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-lg">
         <div class="glass-card widget-card h-100" style="--widget-rgb: 16, 185, 129;">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -144,7 +152,7 @@ require_once 'includes/header.php';
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-lg">
         <div class="glass-card widget-card h-100" style="--widget-rgb: 245, 158, 11;">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -157,7 +165,7 @@ require_once 'includes/header.php';
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-lg">
         <div class="glass-card widget-card h-100" style="--widget-rgb: 168, 85, 247;">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -170,6 +178,37 @@ require_once 'includes/header.php';
             </div>
         </div>
     </div>
+    <?php if ($is_admin): ?>
+    <div class="col-lg">
+        <a href="repair_costs.php" class="text-decoration-none">
+        <div class="glass-card widget-card h-100" style="--widget-rgb: 16, 185, 129; cursor:pointer;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted text-uppercase mb-2">Витрати на ремонт</h6>
+                    <h2 class="fw-bold mb-0" style="font-size:1.5rem; color:#1e335c;"><?php echo number_format($total_repair_cost, 0, '.', ' '); ?> <small style="font-size:0.9rem;">грн</small></h2>
+                    <?php if ($repair_cost_change !== null): ?>
+                    <div class="mt-1" style="font-size:0.75rem;">
+                        <?php if ($repair_cost_change > 0): ?>
+                        <span class="text-danger"><i class="bi bi-arrow-up-right"></i> +<?php echo $repair_cost_change; ?>%</span>
+                        <?php elseif ($repair_cost_change < 0): ?>
+                        <span class="text-success"><i class="bi bi-arrow-down-right"></i> <?php echo $repair_cost_change; ?>%</span>
+                        <?php else: ?>
+                        <span class="text-muted">= без змін</span>
+                        <?php endif; ?>
+                        <span class="text-muted"> vs мин. міс.</span>
+                    </div>
+                    <?php else: ?>
+                    <div class="mt-1 text-muted" style="font-size:0.75rem;">Поточний місяць: <?php echo number_format($repair_cost_month, 0, '.', ' '); ?> грн</div>
+                    <?php endif; ?>
+                </div>
+                <div class="fs-1 opacity-75" style="color: #198754;">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+            </div>
+        </div>
+        </a>
+    </div>
+    <?php endif; ?>
 </div>
 
 <div class="glass-card mb-4 no-print">

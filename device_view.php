@@ -44,6 +44,17 @@ try {
     $stmt_tickets->execute([$device_id]);
     $device_tickets = $stmt_tickets->fetchAll();
 
+    $stmt_expenses = $pdo->prepare("
+        SELECT re.*, u.full_name AS added_by_name
+        FROM repair_expenses re
+        LEFT JOIN users u ON re.created_by = u.id
+        WHERE re.device_id = ?
+        ORDER BY re.expense_date DESC, re.id DESC
+    ");
+    $stmt_expenses->execute([$device_id]);
+    $device_expenses = $stmt_expenses->fetchAll();
+    $total_expense_sum = array_sum(array_column($device_expenses, 'total_price'));
+
 } catch (\PDOException $e) {
     die("Помилка бази даних: " . htmlspecialchars($e->getMessage()));
 }
@@ -181,6 +192,13 @@ require_once 'includes/header.php';
                         <i class="bi bi-wrench-adjustable text-danger"></i> Заявки на ремонт (<?php echo count($device_tickets); ?>)
                     </button>
                 </li>
+                <?php if ($is_admin): ?>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link py-2 <?php echo (isset($_GET['tab']) && $_GET['tab'] === 'expenses') ? 'active' : ''; ?>" id="device-expenses-tab" data-bs-toggle="tab" data-bs-target="#device-expenses" type="button" role="tab" aria-controls="device-expenses" aria-selected="false">
+                        <i class="bi bi-currency-dollar text-success"></i> Витрати на ремонт <?php if ($total_expense_sum > 0): ?><span class="badge bg-success bg-opacity-20 text-success ms-1" style="font-size:0.68rem;"><?php echo number_format($total_expense_sum, 2, '.', ' '); ?> грн</span><?php endif; ?>
+                    </button>
+                </li>
+                <?php endif; ?>
             </ul>
 
             <div class="tab-content" id="logTabsContent">
@@ -569,6 +587,172 @@ require_once 'includes/header.php';
                         </div>
                     <?php endif; ?>
                 </div>
+
+                <?php if ($is_admin): ?>
+                <!-- Tab 6: Repair Expenses -->
+                <div class="tab-pane fade <?php echo (isset($_GET['tab']) && $_GET['tab'] === 'expenses') ? 'show active' : ''; ?>" id="device-expenses" role="tabpanel" aria-labelledby="device-expenses-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h6 class="text-secondary mb-0 text-uppercase fw-bold" style="letter-spacing: 0.06em; font-size: 0.85rem;"><i class="bi bi-currency-dollar me-1"></i>Фінансовий облік витрат на обслуговування</h6>
+                        <button class="btn btn-custom-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+                            <i class="bi bi-plus-lg"></i> Додати витрату
+                        </button>
+                    </div>
+
+                    <!-- Summary widgets -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="expense-total-widget">
+                                <div class="sub-label">Загальні витрати на пристрій</div>
+                                <div class="big-number"><?php echo number_format($total_expense_sum, 2, '.', ' '); ?> грн</div>
+                                <div class="sub-label mt-2">за весь час</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="glass-card h-100">
+                                <div class="text-muted small text-uppercase fw-bold mb-2">Кількість записів</div>
+                                <div class="fs-2 fw-bold text-primary"><?php echo count($device_expenses); ?></div>
+                                <div class="text-muted small">витрат зафіксовано</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="glass-card h-100">
+                                <div class="text-muted small text-uppercase fw-bold mb-2">Активні гарантії</div>
+                                <?php
+                                $today = new DateTime();
+                                $active_warranties = 0;
+                                foreach ($device_expenses as $exp) {
+                                    if ($exp['warranty_months'] > 0) {
+                                        $end_date = (new DateTime($exp['expense_date']))->modify('+' . $exp['warranty_months'] . ' months');
+                                        if ($end_date > $today) $active_warranties++;
+                                    }
+                                }
+                                ?>
+                                <div class="fs-2 fw-bold text-success"><?php echo $active_warranties; ?></div>
+                                <div class="text-muted small">деталей на гарантії</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <?php if (isset($_GET['success']) && $_GET['success'] === 'expense_added'): ?>
+                    <div class="alert alert-success p-3 mb-3"><i class="bi bi-check-circle-fill me-2"></i>Витрату успішно додано!</div>
+                    <?php elseif (isset($_GET['success']) && $_GET['success'] === 'expense_deleted'): ?>
+                    <div class="alert alert-success p-3 mb-3"><i class="bi bi-check-circle-fill me-2"></i>Запис витрати видалено!</div>
+                    <?php endif; ?>
+
+                    <?php if (empty($device_expenses)): ?>
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-cash-coin fs-1 mb-2 d-block text-muted opacity-25"></i>
+                            Витрати на ремонт та обслуговування ще не фіксувалися.
+                            <div class="mt-3">
+                                <button class="btn btn-custom-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addExpenseModal"><i class="bi bi-plus-lg"></i> Додати першу витрату</button>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div class="table-responsive table-responsive-custom">
+                            <table class="table table-custom table-hover small mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Дата</th>
+                                        <th>Тип</th>
+                                        <th>Назва</th>
+                                        <th>К-сть</th>
+                                        <th>Ціна</th>
+                                        <th>Сума</th>
+                                        <th>Постачальник</th>
+                                        <th>Гарантія</th>
+                                        <th>Оплата</th>
+                                        <th>Чек</th>
+                                        <th>Заявка</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($device_expenses as $exp):
+                                        $exp_today = new DateTime();
+                                        $warr_active = false;
+                                        $warr_remaining = '';
+                                        if ($exp['warranty_months'] > 0) {
+                                            $end_date = (new DateTime($exp['expense_date']))->modify('+' . $exp['warranty_months'] . ' months');
+                                            $warr_active = $end_date > $exp_today;
+                                            if ($warr_active) {
+                                                $diff = $exp_today->diff($end_date);
+                                                $warr_remaining = $diff->m + $diff->y * 12 . ' міс.';
+                                            }
+                                        }
+                                        $expTypeClass = match($exp['expense_type']) {
+                                            'запчастина' => 'badge-expense-part',
+                                            'витратний матеріал' => 'badge-expense-material',
+                                            'послуга' => 'badge-expense-service',
+                                            'доставка' => 'badge-expense-delivery',
+                                            default => 'badge-expense-other'
+                                        };
+                                        $payClass = match($exp['payment_status']) {
+                                            'оплачено' => 'badge-paid',
+                                            'очікує оплати' => 'badge-pending',
+                                            'заплановано' => 'badge-planned',
+                                            default => 'badge-paid'
+                                        };
+                                    ?>
+                                    <tr class="expense-row">
+                                        <td><span class="text-muted"><?php echo date('d.m.Y', strtotime($exp['expense_date'])); ?></span></td>
+                                        <td><span class="<?php echo $expTypeClass; ?>"><?php echo htmlspecialchars($exp['expense_type']); ?></span></td>
+                                        <td>
+                                            <strong><?php echo htmlspecialchars($exp['part_name']); ?></strong>
+                                            <?php if (!empty($exp['description'])): ?>
+                                            <div class="text-muted small text-wrap" style="max-width:180px;"><?php echo htmlspecialchars($exp['description']); ?></div>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?php echo (int)$exp['quantity']; ?></td>
+                                        <td><?php echo number_format($exp['unit_price'], 2, '.', ' '); ?> грн</td>
+                                        <td><strong><?php echo number_format($exp['total_price'], 2, '.', ' '); ?> грн</strong></td>
+                                        <td><span class="text-muted"><?php echo htmlspecialchars($exp['supplier'] ?? '—'); ?></span></td>
+                                        <td>
+                                            <?php if ($exp['warranty_months'] <= 0): ?>
+                                                <span class="warranty-none">Без гарантії</span>
+                                            <?php elseif ($warr_active): ?>
+                                                <span class="warranty-active">~<?php echo $warr_remaining; ?></span>
+                                            <?php else: ?>
+                                                <span class="warranty-expired">Вийшла</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><span class="<?php echo $payClass; ?>"><?php echo htmlspecialchars($exp['payment_status']); ?></span></td>
+                                        <td>
+                                            <?php if (!empty($exp['attachment_path'])): ?>
+                                                <a href="<?php echo htmlspecialchars($exp['attachment_path']); ?>" target="_blank" class="attachment-link">
+                                                    <i class="bi bi-paperclip"></i> Переглянути
+                                                </a>
+                                            <?php else: ?>
+                                                <span class="text-muted">—</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <?php if (!empty($exp['ticket_id'])): ?>
+                                                <span class="text-muted small">#<?php echo (int)$exp['ticket_id']; ?></span>
+                                            <?php else: ?>
+                                                <span class="text-muted">—</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <a href="actions/delete_expense.php?id=<?php echo $exp['id']; ?>&device_id=<?php echo $device_id; ?>" class="btn btn-sm btn-outline-danger py-0 px-2 delete-expense-btn" title="Видалити">
+                                                <i class="bi bi-trash3"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="fw-bold">
+                                        <td colspan="5" class="text-end">Загалом:</td>
+                                        <td><?php echo number_format($total_expense_sum, 2, '.', ' '); ?> грн</td>
+                                        <td colspan="6"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
+
             </div>
         </div>
     </div>
@@ -618,21 +802,45 @@ require_once 'includes/header.php';
 
 <!-- Modal for closing/rejecting ticket -->
 <div class="modal fade" id="actionTicketModal" tabindex="-1" aria-labelledby="actionTicketModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content modal-content-custom bg-white border border-opacity-10 shadow">
             <div class="modal-header border-bottom-0 pb-0">
                 <h5 class="modal-title" id="actionTicketModalLabel"><i class="bi bi-wrench-adjustable-circle text-primary"></i> <span id="action-modal-title">Вирішення заявки</span></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="actions/update_ticket.php" method="POST">
+            <form action="actions/update_ticket.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="ticket_id" id="modal-ticket-id" value="">
                 <input type="hidden" name="action" id="modal-ticket-action" value="">
+                <input type="hidden" name="device_id" value="<?php echo $device_id; ?>">
                 <div class="modal-body">
                     <p class="text-muted small" id="action-modal-desc">Додайте супровідний коментар (наприклад, що саме було зроблено для вирішення проблеми).</p>
                     <div class="mb-3">
                         <label class="form-label text-muted small">Коментар</label>
                         <textarea class="form-control form-control-custom" id="modal-ticket-comment" name="comment" rows="3" placeholder="Наприклад: Замінено плашку оперативної пам'яті DDR4 8GB на нову..."></textarea>
                     </div>
+                    <?php if ($is_admin): ?>
+                    <hr class="border-secondary border-opacity-25">
+                    <div class="form-check mb-2">
+                        <input type="checkbox" class="form-check-input" id="add-expense-checkbox" onchange="toggleExpenseSection()">
+                        <label class="form-check-label fw-semibold" for="add-expense-checkbox">
+                            <i class="bi bi-currency-dollar text-success"></i> Зафіксувати фінансові витрати на цей ремонт
+                        </label>
+                    </div>
+                    <div id="expense-section" style="display:none;">
+                        <div class="d-flex justify-content-between align-items-center mb-2 mt-3">
+                            <span class="text-muted small fw-semibold">Позиції витрат:</span>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" onclick="addExpenseRow()">
+                                <i class="bi bi-plus"></i> Додати позицію
+                            </button>
+                        </div>
+                        <div id="expense-rows-placeholder" class="text-center py-3 text-muted small">Натисніть «Додати позицію», щоб внести витрати</div>
+                        <div id="expense-rows-container"></div>
+                        <div class="text-end mt-2 pt-2 border-top border-secondary border-opacity-25">
+                            <span class="text-muted small">Разом: </span>
+                            <strong class="text-primary" id="expense-grand-total">0.00 грн</strong>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                 </div>
                 <div class="modal-footer border-top-0 pt-0">
                     <button type="button" class="btn btn-custom-secondary btn-sm px-3" data-bs-dismiss="modal">Скасувати</button>
@@ -641,6 +849,101 @@ require_once 'includes/header.php';
             </form>
         </div>
     </div>
+</div>
+
+<?php if ($is_admin): ?>
+<!-- Modal: Add Standalone Expense -->
+<div class="modal fade" id="addExpenseModal" tabindex="-1" aria-labelledby="addExpenseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content modal-content-custom bg-white border border-opacity-10 shadow">
+            <div class="modal-header modal-header-custom">
+                <h5 class="modal-title text-gradient" id="addExpenseModalLabel"><i class="bi bi-cash-coin"></i> Додати витрату на обслуговування</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="actions/save_expense.php" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="device_id" value="<?php echo $device_id; ?>">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Тип витрати *</label>
+                            <select name="expense_type" class="form-select form-control-custom" required>
+                                <option value="запчастина">🔩 Запчастина</option>
+                                <option value="витратний матеріал">📦 Витратний матеріал</option>
+                                <option value="послуга">🛠️ Послуга</option>
+                                <option value="доставка">🚚 Доставка</option>
+                                <option value="інше">📋 Інше</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label text-muted small">Назва / Позиція *</label>
+                            <input type="text" name="part_name" class="form-control form-control-custom" placeholder="Напр. SSD Kingston A400 480GB" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label text-muted small">Опис (необов'язково)</label>
+                            <textarea name="description" class="form-control form-control-custom" rows="2" placeholder="Додаткові деталі щодо ремонту або встановленої запчастини..."></textarea>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-muted small">Кількість *</label>
+                            <input type="number" name="quantity" id="modal-qty" class="form-control form-control-custom" min="1" value="1" required oninput="document.getElementById('modal-total').textContent = (this.value * (parseFloat(document.getElementById('modal-price').value)||0)).toFixed(2) + ' грн'">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small">Ціна за одиницю (грн) *</label>
+                            <input type="number" name="unit_price" id="modal-price" class="form-control form-control-custom" min="0" step="0.01" value="0" required oninput="document.getElementById('modal-total').textContent = (this.value * (parseInt(document.getElementById('modal-qty').value)||1)).toFixed(2) + ' грн'">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <div class="w-100">
+                                <label class="form-label text-muted small">Разом</label>
+                                <div class="form-control form-control-custom bg-light fw-bold text-primary" id="modal-total">0.00 грн</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Постачальник</label>
+                            <input type="text" name="supplier" class="form-control form-control-custom" placeholder="Rozetka, MOYO, Фокстрот...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small">Номер чека/накладної</label>
+                            <input type="text" name="receipt_number" class="form-control form-control-custom" placeholder="№ документу">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small">Гарантія (місяців)</label>
+                            <input type="number" name="warranty_months" class="form-control form-control-custom" min="0" value="0" placeholder="0 = без гарантії">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small">Дата витрати *</label>
+                            <input type="date" name="expense_date" class="form-control form-control-custom" value="<?php echo date('Y-m-d'); ?>" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small">Статус оплати</label>
+                            <select name="payment_status" class="form-select form-control-custom">
+                                <option value="оплачено">✅ Оплачено</option>
+                                <option value="очікує оплати">⏳ Очікує оплати</option>
+                                <option value="заплановано">📅 Заплановано</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Прив'язка до заявки (необов'язково)</label>
+                            <select name="ticket_id" class="form-select form-control-custom">
+                                <option value="">— Без прив'язки —</option>
+                                <?php foreach ($device_tickets as $t): ?>
+                                <option value="<?php echo $t['id']; ?>">#<?php echo $t['id']; ?> — <?php echo htmlspecialchars(mb_strimwidth($t['description'], 0, 60, '...')); ?> [<?php echo $t['status']; ?>]</option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Прикріпити чек/акт (JPG, PNG, PDF, ≤5МБ)</label>
+                            <input type="file" name="attachment" class="form-control form-control-custom expense-attachment" accept=".jpg,.jpeg,.png,.pdf">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer modal-footer-custom">
+                    <button type="button" class="btn btn-custom-secondary" data-bs-dismiss="modal">Скасувати</button>
+                    <button type="submit" class="btn btn-custom-primary"><i class="bi bi-save"></i> Зберегти витрату</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 <!-- Modal for editing device -->
 <div class="modal fade" id="editDeviceModal" tabindex="-1" aria-labelledby="editDeviceModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">

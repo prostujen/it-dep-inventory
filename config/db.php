@@ -18,6 +18,8 @@ if (basename($_SERVER['SCRIPT_NAME']) !== 'login.php') {
     }
 }
 
+$is_admin = (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin');
+
 $host = '127.0.0.1';
 $db   = 'it_dep_inventory';
 $user = 'root';
@@ -108,6 +110,32 @@ try {
          `motherboard` VARCHAR(100) DEFAULT NULL,
          `power_supply` VARCHAR(100) DEFAULT NULL,
          FOREIGN KEY (`device_id`) REFERENCES `devices`(`id`) ON DELETE CASCADE
+     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+     $pdo->exec("CREATE TABLE IF NOT EXISTS `repair_expenses` (
+         `id` INT AUTO_INCREMENT PRIMARY KEY,
+         `ticket_id` INT DEFAULT NULL,
+         `device_id` INT NOT NULL,
+         `expense_type` ENUM('запчастина','витратний матеріал','послуга','доставка','інше') NOT NULL DEFAULT 'запчастина',
+         `part_name` VARCHAR(150) NOT NULL,
+         `description` TEXT DEFAULT NULL,
+         `quantity` INT NOT NULL DEFAULT 1,
+         `unit_price` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+         `total_price` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+         `supplier` VARCHAR(150) DEFAULT NULL,
+         `receipt_number` VARCHAR(100) DEFAULT NULL,
+         `attachment_path` VARCHAR(255) DEFAULT NULL,
+         `warranty_months` INT NOT NULL DEFAULT 0,
+         `expense_date` DATE NOT NULL,
+         `payment_status` ENUM('оплачено','очікує оплати','заплановано') NOT NULL DEFAULT 'оплачено',
+         `created_by` INT DEFAULT NULL,
+         `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+         FOREIGN KEY (`ticket_id`) REFERENCES `tickets`(`id`) ON DELETE SET NULL,
+         FOREIGN KEY (`device_id`) REFERENCES `devices`(`id`) ON DELETE CASCADE,
+         FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL,
+         INDEX `idx_device_id` (`device_id`),
+         INDEX `idx_ticket_id` (`ticket_id`),
+         INDEX `idx_expense_date` (`expense_date`)
      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 } catch (\PDOException $e) {
      throw new \PDOException($e->getMessage(), (int)$e->getCode());

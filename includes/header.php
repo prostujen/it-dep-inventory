@@ -40,6 +40,13 @@ $current_page = basename($_SERVER['PHP_SELF']);
                             <i class="bi bi-grid-fill"></i> Панель керування
                         </a>
                     </li>
+                    <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2 <?php echo ($current_page == 'repair_costs.php') ? 'active' : ''; ?>" href="repair_costs.php">
+                            <i class="bi bi-cash-coin"></i> Витрати
+                        </a>
+                    </li>
+                    <?php endif; ?>
                     <li class="nav-item">
                         <a class="nav-link d-flex align-items-center gap-2 <?php echo ($current_page == 'settings.php') ? 'active' : ''; ?>" href="settings.php">
                             <i class="bi bi-gear-fill"></i> Налаштування
