@@ -737,7 +737,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="modal-content modal-content-custom bg-white border border-opacity-10 shadow">
             <div class="modal-header modal-header-custom py-2 px-3">
                 <h5 class="modal-title fs-6 text-gradient d-flex align-items-center gap-2" id="addExpenseModalLabel">
-                    <i class="bi bi-cash-coin"></i> Додати витрату на обслуговування
+                    <i class="bi bi-cash-coin"></i> Додати витрати на обслуговування
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -745,7 +745,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="hidden" name="redirect_to" value="repair_costs.php">
                 <div class="modal-body py-4">
                     <div class="row g-3">
-                        <div class="col-md-12">
+                        <!-- Global Fields for the Expense/Invoice -->
+                        <div class="col-md-6">
                             <label class="form-label text-muted small mb-1">Пристрій / Обладнання *</label>
                             <select name="device_id" class="form-select form-control-custom" required>
                                 <option value="">-- Оберіть пристрій --</option>
@@ -756,71 +757,44 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label text-muted small mb-1">Тип витрати *</label>
-                            <select name="expense_type" class="form-select form-control-custom" required>
-                                <option value="запчастина">🔩 Запчастина</option>
-                                <option value="витратний матеріал">📦 Витратний матеріал</option>
-                                <option value="послуга">🛠️ Послуга</option>
-                                <option value="доставка">🚚 Доставка</option>
-                                <option value="інше">📋 Інше</option>
-                            </select>
-                        </div>
-                        <div class="col-md-8">
-                            <label class="form-label text-muted small mb-1">Назва / Позиція *</label>
-                            <input type="text" name="part_name" class="form-control form-control-custom" placeholder="Напр. SSD Kingston A400 480GB" required>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label text-muted small mb-1">Опис (необов'язково)</label>
-                            <textarea name="description" class="form-control form-control-custom" rows="2" placeholder="Додаткові деталі щодо ремонту або встановленої запчастини..."></textarea>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label text-muted small mb-1">Кількість *</label>
-                            <input type="number" name="quantity" id="modal-qty" class="form-control form-control-custom" min="1" value="1" required oninput="document.getElementById('modal-total').textContent = (this.value * (parseFloat(document.getElementById('modal-price').value)||0)).toFixed(2) + ' грн'">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label text-muted small mb-1">Ціна за одиницю (грн) *</label>
-                            <input type="number" name="unit_price" id="modal-price" class="form-control form-control-custom" min="0" step="0.01" value="0" required oninput="document.getElementById('modal-total').textContent = (this.value * (parseInt(document.getElementById('modal-qty').value)||1)).toFixed(2) + ' грн'">
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <div class="w-100">
-                                <label class="form-label text-muted small mb-1">Разом</label>
-                                <div class="form-control form-control-custom bg-light fw-bold text-primary" id="modal-total">0.00 грн</div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label text-muted small mb-1">Постачальник</label>
-                            <input type="text" name="supplier" class="form-control form-control-custom" placeholder="Rozetka, MOYO, Фокстрот...">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label text-muted small mb-1">Номер чека/накладної</label>
-                            <input type="text" name="receipt_number" class="form-control form-control-custom" placeholder="№ документу">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label text-muted small mb-1">Гарантія (місяців)</label>
-                            <input type="number" name="warranty_months" class="form-control form-control-custom" min="0" value="0" placeholder="0 = без гарантії">
-                        </div>
                         <div class="col-md-3">
                             <label class="form-label text-muted small mb-1">Дата витрати *</label>
                             <input type="date" name="expense_date" class="form-control form-control-custom" value="<?php echo date('Y-m-d'); ?>" required>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label text-muted small mb-1">Статус оплати</label>
-                            <select name="payment_status" class="form-select form-control-custom">
-                                <option value="оплачено">✅ Оплачено</option>
-                                <option value="очікує оплати">⏳ Очікує оплати</option>
-                                <option value="заплановано">📅 Заплановано</option>
-                            </select>
+                            <label class="form-label text-muted small mb-1">Номер чека/накладної</label>
+                            <input type="text" name="receipt_number" class="form-control form-control-custom" placeholder="№ документу">
                         </div>
-                        <div class="col-md-9">
-                            <label class="form-label text-muted small mb-1">Чек / Накладна (JPG, PNG або PDF, до 5МБ)</label>
-                            <input type="file" name="attachment" class="form-control form-control-custom expense-attachment" accept=".jpg,.jpeg,.png,.pdf">
+                        <div class="col-md-12">
+                            <label class="form-label text-muted small mb-1">Опис / Загальний коментар (необов'язково)</label>
+                            <textarea name="description" class="form-control form-control-custom" rows="2" placeholder="Загальні деталі щодо ремонту..."></textarea>
                         </div>
+                    </div>
+                    
+                    <hr class="border-secondary border-opacity-25 my-4">
+                    
+                    <!-- Dynamic Rows Section -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted small fw-semibold"><i class="bi bi-list-stars"></i> Складові витрат (позиції):</span>
+                        <button type="button" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 py-1 px-3" onclick="addStandaloneExpenseRow()">
+                            <i class="bi bi-plus-circle"></i> Додати позицію
+                        </button>
+                    </div>
+                    
+                    <div id="standalone-expense-rows-placeholder" class="text-center py-4 text-muted small border rounded border-dashed" style="display:none;">
+                        Натисніть «Додати позицію», щоб внести складові витрат.
+                    </div>
+                    
+                    <div id="standalone-expense-rows-container"></div>
+                    
+                    <div class="text-end mt-3 pt-3 border-top border-secondary border-opacity-25">
+                        <span class="text-muted small">Загальна сума витрат: </span>
+                        <strong class="text-primary fs-5" id="standalone-expense-grand-total">0.00 грн</strong>
                     </div>
                 </div>
                 <div class="modal-footer modal-footer-custom py-2 px-3">
                     <button type="button" class="btn btn-sm btn-custom-secondary" data-bs-dismiss="modal">Скасувати</button>
-                    <button type="submit" class="btn btn-sm btn-custom-primary">Зберегти витрату</button>
+                    <button type="submit" class="btn btn-sm btn-custom-primary">Зберегти витрати</button>
                 </div>
             </form>
         </div>

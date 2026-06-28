@@ -353,3 +353,123 @@ function setDatePeriod(period) {
     }
 }
 
+// Standalone Modal Dynamic Expense Rows
+let standaloneExpenseRowIndex = 0;
+
+function buildStandaloneExpenseRow(index) {
+    return `
+    <div class="expense-input-row mb-3 pb-3 border-bottom border-secondary border-opacity-10" id="standalone-expense-row-${index}">
+        <button type="button" class="btn-remove-expense-row" onclick="removeStandaloneExpenseRow(${index})" title="Видалити рядок" style="top: 0.5rem; right: 0.5rem;">
+            <i class="bi bi-x"></i>
+        </button>
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label text-muted small mb-1">Тип витрати *</label>
+                <select name="expense_rows[${index}][type]" class="form-select form-select-sm" required>
+                    <option value="запчастина">🔩 Запчастина</option>
+                    <option value="витратний матеріал">📦 Витратний матеріал</option>
+                    <option value="послуга">🛠️ Послуга</option>
+                    <option value="доставка">🚚 Доставка</option>
+                    <option value="інше">📋 Інше</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted small mb-1">Назва / Позиція *</label>
+                <input type="text" name="expense_rows[${index}][name]" class="form-control form-control-sm" placeholder="Напр. SSD Kingston A400" required>
+            </div>
+            <div class="col-md-1">
+                <label class="form-label text-muted small mb-1">К-сть *</label>
+                <input type="number" name="expense_rows[${index}][qty]" class="form-control form-control-sm standalone-expense-qty" min="1" value="1" required oninput="calcStandaloneRowTotal(${index})">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted small mb-1">Ціна (грн) *</label>
+                <input type="number" name="expense_rows[${index}][price]" class="form-control form-control-sm standalone-expense-price" min="0" step="0.01" value="0" required oninput="calcStandaloneRowTotal(${index})">
+            </div>
+            <div class="col-md-2 text-center">
+                <label class="form-label text-muted small mb-1">Сума</label>
+                <div class="row-total text-primary fw-bold fs-6 pt-1" id="standalone-row-total-${index}">0.00 грн</div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small mb-1">Постачальник</label>
+                <input type="text" name="expense_rows[${index}][supplier]" class="form-control form-control-sm" placeholder="Rozetka, MOYO...">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted small mb-1">Гарантія (міс.)</label>
+                <input type="number" name="expense_rows[${index}][warranty]" class="form-control form-control-sm" min="0" value="0" placeholder="Без гарантії">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted small mb-1">Статус оплати</label>
+                <select name="expense_rows[${index}][payment]" class="form-select form-select-sm">
+                    <option value="оплачено">✅ Оплачено</option>
+                    <option value="очікує оплати">⏳ Очікує</option>
+                    <option value="заплановано">📅 Заплановано</option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label text-muted small mb-1">Чек / Накладна (JPG, PNG, PDF, до 5МБ)</label>
+                <input type="file" name="expense_rows[${index}][attachment]" class="form-control form-control-sm expense-attachment" accept=".jpg,.jpeg,.png,.pdf">
+            </div>
+        </div>
+    </div>`;
+}
+
+function calcStandaloneRowTotal(index) {
+    const row = document.getElementById('standalone-expense-row-' + index);
+    if (!row) return;
+    const qty   = parseFloat(row.querySelector('.standalone-expense-qty')?.value || 0) || 0;
+    const price = parseFloat(row.querySelector('.standalone-expense-price')?.value || 0) || 0;
+    const total = qty * price;
+    const totalEl = document.getElementById('standalone-row-total-' + index);
+    if (totalEl) totalEl.textContent = total.toFixed(2) + ' грн';
+    calcStandaloneGrandTotal();
+}
+
+function calcStandaloneGrandTotal() {
+    const totalEls = document.querySelectorAll('[id^="standalone-row-total-"]');
+    let grand = 0;
+    totalEls.forEach(el => {
+        grand += parseFloat(el.textContent) || 0;
+    });
+    const grandEl = document.getElementById('standalone-expense-grand-total');
+    if (grandEl) grandEl.textContent = grand.toFixed(2) + ' грн';
+}
+
+function addStandaloneExpenseRow() {
+    const container = document.getElementById('standalone-expense-rows-container');
+    if (!container) return;
+    standaloneExpenseRowIndex++;
+    container.insertAdjacentHTML('beforeend', buildStandaloneExpenseRow(standaloneExpenseRowIndex));
+    
+    const placeholder = document.getElementById('standalone-expense-rows-placeholder');
+    if (placeholder) placeholder.style.display = 'none';
+}
+
+function removeStandaloneExpenseRow(index) {
+    const row = document.getElementById('standalone-expense-row-' + index);
+    if (row) {
+        row.remove();
+        calcStandaloneGrandTotal();
+    }
+    const container = document.getElementById('standalone-expense-rows-container');
+    if (container && container.querySelectorAll('.expense-input-row').length === 0) {
+        const placeholder = document.getElementById('standalone-expense-rows-placeholder');
+        if (placeholder) placeholder.style.display = '';
+    }
+}
+
+// Reset and auto-initialize standalone modal rows on open
+document.addEventListener('DOMContentLoaded', function() {
+    const addExpenseModal = document.getElementById('addExpenseModal');
+    if (addExpenseModal) {
+        addExpenseModal.addEventListener('show.bs.modal', function() {
+            const container = document.getElementById('standalone-expense-rows-container');
+            if (container) {
+                container.innerHTML = '';
+                standaloneExpenseRowIndex = 0;
+                addStandaloneExpenseRow();
+            }
+        });
+    }
+});
+
+
