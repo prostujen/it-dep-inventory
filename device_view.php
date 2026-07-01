@@ -55,6 +55,16 @@ try {
     $device_expenses = $stmt_expenses->fetchAll();
     $total_expense_sum = array_sum(array_column($device_expenses, 'total_price'));
 
+    // Fetch other active devices with network configurations to copy settings
+    $stmt_active_net = $pdo->prepare("
+        SELECT d.id, d.name, d.model, n.ip_address, n.subnet_mask, n.gateway, n.dns_server
+        FROM devices d
+        JOIN network_settings n ON d.id = n.device_id
+        WHERE d.id != ? AND d.status = 'в роботі' AND n.ip_address IS NOT NULL AND n.ip_address != ''
+    ");
+    $stmt_active_net->execute([$device_id]);
+    $active_devices_net = $stmt_active_net->fetchAll();
+
 } catch (\PDOException $e) {
     die("Помилка бази даних: " . htmlspecialchars($e->getMessage()));
 }
@@ -256,6 +266,33 @@ require_once 'includes/header.php';
                         <!-- Right Side: Network Settings Form -->
                         <div class="col-md-6 ps-md-4">
                             <h6 class="text-secondary mb-3 small text-uppercase tracking-wider fw-bold">Конфігурація мережевого підключення</h6>
+                            
+                            <?php if ($is_admin && !empty($active_devices_net)): ?>
+                            <div class="mb-4 p-3 bg-light border border-secondary border-opacity-10 rounded">
+                                <label class="form-label text-muted small fw-semibold mb-2 d-flex align-items-center gap-2">
+                                    <i class="bi bi-copy text-primary"></i> Запозичити налаштування з іншого робочого обладнання:
+                                </label>
+                                <div class="input-group input-group-sm">
+                                    <select id="copy-device-select" class="form-select text-dark bg-white">
+                                        <option value="">-- Оберіть пристрій для копіювання --</option>
+                                        <?php foreach ($active_devices_net as $ad): ?>
+                                            <option value="<?php echo $ad['id']; ?>" 
+                                                    data-ip="<?php echo htmlspecialchars($ad['ip_address'] ?? ''); ?>"
+                                                    data-mask="<?php echo htmlspecialchars($ad['subnet_mask'] ?? ''); ?>"
+                                                    data-gateway="<?php echo htmlspecialchars($ad['gateway'] ?? ''); ?>"
+                                                    data-dns="<?php echo htmlspecialchars($ad['dns_server'] ?? ''); ?>">
+                                                <?php echo htmlspecialchars($ad['name'] . ' ' . $ad['model'] . ' (' . $ad['ip_address'] . ')'); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <button type="button" class="btn btn-primary" onclick="applyCopiedSettings()">
+                                        Задіяти
+                                    </button>
+                                </div>
+                                <div class="form-text text-muted small mt-1" style="font-size: 0.75rem;">Цей інструмент скопіює маску, шлюз, DNS та автоматично запропонує вільну IP-адресу (збільшену на 1) для запобігання конфлікту.</div>
+                            </div>
+                            <?php endif; ?>
+
                             <form action="actions/update_net.php" method="POST">
                                 <input type="hidden" name="device_id" value="<?php echo $device['id']; ?>">
                                 <div class="row g-3">
@@ -1021,6 +1058,44 @@ require_once 'includes/header.php';
     color: var(--accent-blue) !important;
 }
 </style>
+
+<script>
+function applyCopiedSettings() {
+    const select = document.getElementById('copy-device-select');
+    if (!select || !select.value) {
+        alert('Будь ласка, оберіть пристрій зі списку.');
+        return;
+    }
+    const option = select.options[select.selectedIndex];
+    const ip = option.getAttribute('data-ip');
+    const mask = option.getAttribute('data-mask');
+    const gateway = option.getAttribute('data-gateway');
+    const dns = option.getAttribute('data-dns');
+    
+    // Propose an incremented IP to avoid collision
+    let proposedIp = ip;
+    if (ip) {
+        const parts = ip.split('.');
+        if (parts.length === 4) {
+            const lastOctet = parseInt(parts[3]);
+            if (lastOctet < 254) {
+                parts[3] = (lastOctet + 1).toString();
+                proposedIp = parts.join('.');
+            }
+        }
+    }
+    
+    const ipInput = document.getElementById('net-ip');
+    const maskInput = document.getElementById('net-mask');
+    const gatewayInput = document.getElementById('net-gateway');
+    const dnsInput = document.getElementById('net-dns');
+    
+    if (ipInput) ipInput.value = proposedIp;
+    if (maskInput) maskInput.value = mask;
+    if (gatewayInput) gatewayInput.value = gateway;
+    if (dnsInput) dnsInput.value = dns;
+}
+</script>
 
 <?php 
 require_once 'includes/footer.php';
